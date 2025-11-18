@@ -3,12 +3,11 @@
 // Connect to database
 include("dbconnect.php");
 
-// Read values from the form
-$game_name = $mysqli->real_escape_string($_POST['GameName']);
-$game_description = $mysqli->real_escape_string($_POST['GameDescription']);
+// Read values from the form, uses escape string to prevent SQL injection and allow use of special characters
+$game_name = $mysqli->real_escape_string(trim($_POST['GameName']));
+$game_description = $mysqli->real_escape_string(trim($_POST['GameDescription']));
 $game_release_date = $_POST['DateReleased'];
 $game_rating = $_POST['GameRating'];
-
 
 // Build SQL statement
 $sql = "INSERT INTO videogames(game_name, game_description, released_date, rating)

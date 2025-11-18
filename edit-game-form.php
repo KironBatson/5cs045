@@ -1,9 +1,9 @@
 <?php include("dbconnect.php");
 
-// Read updated values from the form
+// Read updated values from the form, uses escape string to prevent SQL injection and allow use of special characters
 $game_id = $_POST['game_id'];
-$game_name = $mysqli->real_escape_string($_POST['GameName']);
-$game_description = $mysqli->real_escape_string($_POST['GameDescription']);
+$game_name = $mysqli->real_escape_string(trim($_POST['GameName']));
+$game_description = $mysqli->real_escape_string(trim($_POST['GameDescription']));
 $game_release_date = $_POST['DateReleased'];
 $game_rating = $_POST['GameRating'];
 

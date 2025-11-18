@@ -47,5 +47,105 @@ $game = mysqli_fetch_assoc($results);
 <input type="submit" class="btn btn-success" value="Save Changes"> <a href="frontpage.php" class="btn btn-danger">Cancel</a>
 
 </form>
+<script>
+// Elements
+const gameNameInput = document.getElementById("GameName");
+const gameDescInput = document.getElementById("GameDescription");
+const gameRatingInput = document.getElementById("GameRating");
+const gameDateInput = document.getElementById("DateReleased");
+const submitBtn = document.querySelector('input[type="submit"]');
 
+// Message spans under each input (create if not already in HTML)
+const nameMsg = document.createElement('div');
+nameMsg.className = 'text-danger mt-1';
+gameNameInput.parentNode.appendChild(nameMsg);
+
+const descMsg = document.createElement('div');
+descMsg.className = 'text-danger mt-1';
+gameDescInput.parentNode.appendChild(descMsg);
+
+const ratingMsg = document.createElement('div');
+ratingMsg.className = 'text-danger mt-1';
+gameRatingInput.parentNode.appendChild(ratingMsg);
+
+const dateMsg = document.createElement('div');
+dateMsg.className = 'text-danger mt-1';
+gameDateInput.parentNode.appendChild(dateMsg);
+
+// Disable submit initially if fields are blank
+submitBtn.disabled = false;
+
+// Validate fields function
+function validateForm() {
+    let valid = true;
+
+    const name = gameNameInput.value.trim();
+    const desc = gameDescInput.value.trim();
+    const rating = gameRatingInput.value.trim();
+    const date = gameDateInput.value;
+
+    // Name
+    if (name === '') {
+        nameMsg.textContent = "Name cannot be blank.";
+        valid = false;
+    } else {
+        nameMsg.textContent = '';
+    }
+
+    // Description
+    if (desc === '') {
+        descMsg.textContent = "Description cannot be blank.";
+        valid = false;
+    } else {
+        descMsg.textContent = '';
+    }
+
+    // Rating
+    if (rating === '') {
+        ratingMsg.textContent = "Rating cannot be blank.";
+        valid = false;
+    } else {
+        ratingMsg.textContent = '';
+    }
+
+    // Release date
+    if (date === '') {
+        dateMsg.textContent = "Release date cannot be blank.";
+        valid = false;
+    } else {
+        dateMsg.textContent = '';
+    }
+
+    // Enable submit if all fields are valid
+    submitBtn.disabled = !valid;
+}
+
+// AJAX duplicate name check (ignore current game_id)
+const currentGameId = <?= $game['game_id'] ?>;
+
+gameNameInput.addEventListener('input', function() {
+    const name = this.value.trim();
+    
+    if (name.length === 0) {
+        validateForm();
+        return;
+    }
+
+    fetch("check-game.php?name=" + encodeURIComponent(name) + "&exclude=" + currentGameId)
+        .then(res => res.json())
+        .then(data => {
+            if (data.exists) {
+                nameMsg.textContent = "This game name already exists.";
+                submitBtn.disabled = true;
+            } else {
+                validateForm();
+            }
+        });
+});
+
+// Validate other fields on input
+[gameDescInput, gameRatingInput, gameDateInput].forEach(el => {
+    el.addEventListener('input', validateForm);
+});
+</script>
 <?php include("templates/footer.php");?>
