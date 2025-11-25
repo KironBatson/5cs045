@@ -8,11 +8,16 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form action="add-game.php" method="post">
+        <form action="add-game.php" method="post" enctype="multipart/form-data">
 <div class="mb-3">
   <label for="GameName" class="form-label">Game name</label>
   <input type="text" class="form-control" id="GameName" name="GameName">
   <div id="gameNameMsg" class="text-danger mt-1" style="display:none;"></div>
+</div>
+
+<div class="mb-3">
+    <label for="GameThumbnail" class="form-label">Game Cover</label>
+    <input type="file" class="form-control" id="GameThumbnail" name="GameThumbnail" accept="image/*">
 </div>
 
 <div class="mb-3">
@@ -46,7 +51,6 @@
         ?>
     </select>
 </div>
-
 
 <input type="submit" class="btn btn-secondary" id="submitBtn" value="Add game" disabled>
 

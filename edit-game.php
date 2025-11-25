@@ -16,7 +16,7 @@ $game = mysqli_fetch_assoc($results);
 
 <h1>Edit <?=$game['game_name']?></h1>
 
-<form action="edit-game-form.php" method="post">
+<form action="edit-game-form.php" method="post" enctype="multipart/form-data">
 
 <input type="hidden" name="game_id" value="<?=$game['game_id']?>">
 
@@ -24,6 +24,15 @@ $game = mysqli_fetch_assoc($results);
     <label for="GameName" class="form-label">Game name</label>
     <input type="text" class="form-control" id="GameName" 
         name="GameName" value="<?=$game['game_name']?>">
+</div>
+
+<?php if (!empty($game['thumbnail_path'])): ?>
+    <img src="<?= $game['thumbnail_path'] ?>" alt="<?= $game['game_name'] ?>" class="img-thumbnail mb-2" style="max-width:150px;">
+<?php endif; ?>
+
+<div class="mb-3">
+    <label for="GameThumbnail" class="form-label">Game Cover (optional)</label>
+    <input type="file" class="form-control" id="GameThumbnail" name="GameThumbnail" accept="image/*">
 </div>
 
 <div class="mb-3">

@@ -4,7 +4,7 @@ include("templates/header.php");
 include("templates/nav.php");
 ?>
     
-<h1>Kiron's Games Archive</h1> <!--main heading-->
+<h1 class="text-center">Kiron's Games Archive</h1> <!--main heading-->
 
 <?php
 include("dbconnect.php");
@@ -14,17 +14,30 @@ $sql = "SELECT * FROM videogames ORDER BY game_name";
 $results = mysqli_query($mysqli, $sql);
 ?>
 
-<table class="table table-striped"> 
-	<?php while($a_row = mysqli_fetch_assoc($results)):?>
-		<tr>
-		<td><a href="game-details.php?id=<?=$a_row['game_id']?>"><?=$a_row['game_name']?></a></td>
-		<td><?=$a_row['released_date']?></td>
-		<td><?=$a_row['rating']?></td>
-		<td><a class="btn btn-outline-warning" href="edit-game.php?id=<?=$a_row['game_id']?>" role="button">Edit</a></td>
-		<td><a class="btn btn-outline-danger" href="delete-game.php?id=<?=$a_row['game_id']?>" role="button">Delete</a></td>
-		</tr>
-	<?php endwhile;?>
-</table>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+<?php while($a_row = mysqli_fetch_assoc($results)): ?>
+  <div class="col">
+    <div class="card h-100">
+      <!-- Game cover -->
+      <img src="<?= $a_row['thumbnail_path'] ?? 'uploads/placeholder.jpg' ?>" 
+     class="card-img-top" 
+     alt="<?= $a_row['game_name'] ?>">
+
+      
+      <div class="card-body">
+        <h5 class="card-title"><?=htmlspecialchars($a_row['game_name'])?></h5>
+        <p class="card-text">Released: <?=htmlspecialchars($a_row['released_date'])?><br>
+        Rating: <?=htmlspecialchars($a_row['rating'])?></p>
+        
+        <a href="game-details.php?id=<?=$a_row['game_id']?>" class="btn btn-primary">View</a>
+        <a href="edit-game.php?id=<?=$a_row['game_id']?>" class="btn btn-outline-warning">Edit</a>
+        <a href="delete-game.php?id=<?=$a_row['game_id']?>" class="btn btn-outline-danger">Delete</a>
+      </div>
+    </div>
+  </div>
+<?php endwhile; ?>
+</div>
+<br>
 
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addgame" >Add new game</button>
 
