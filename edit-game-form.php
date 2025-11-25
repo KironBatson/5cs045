@@ -8,22 +8,59 @@ $game_release_date = $_POST['DateReleased'];
 $game_rating = $_POST['GameRating'];
 $game_genre = $_POST['GameGenre'] ? (int)$_POST['GameGenre'] : "NULL";
 
-// Handle thumbnail upload (optional)
-$thumbnail_sql = "";
+// Keep current thumbnail as default
+$thumbnail_path = null;
+
+// Handle (optional) thumbnail upload
 if (isset($_FILES['GameThumbnail']) && $_FILES['GameThumbnail']['error'] === UPLOAD_ERR_OK) {
     $fileTmpPath = $_FILES['GameThumbnail']['tmp_name'];
     $fileName = basename($_FILES['GameThumbnail']['name']);
-    $fileName = time() . '_' . preg_replace("/[^a-zA-Z0-9\._-]/", "", $fileName); // sanitize and add timestamp
-    $destPath = 'uploads/' . $fileName;
+    $fileSize = $_FILES['GameThumbnail']['size'];
+    $fileType = mime_content_type($fileTmpPath);
+    $allowedTypes = ['image/jpeg','image/png','image/gif'];
 
-    if (move_uploaded_file($fileTmpPath, $destPath)) {
-        $thumbnail_sql = ", thumbnail_path = '{$destPath}'";
+    if (!in_array($fileType, $allowedTypes)) {
+        echo "<h4>Invalid file type. Keeping existing thumbnail.</h4>";
+    } elseif ($fileSize > 2*1024*1024) {
+        echo "<h4>File too large (max 2MB). Keeping existing thumbnail.</h4>";
     } else {
-        echo "<h4>Thumbnail upload failed, keeping existing thumbnail</h4>";
+        $fileName = time() . '_' . preg_replace("/[^a-zA-Z0-9\._-]/","",$fileName);
+        $destPath = 'uploads/' . $fileName;
+
+        if (move_uploaded_file($fileTmpPath, $destPath)) {
+            // Resize for consistency
+            list($origW,$origH,$type) = getimagesize($destPath);
+            $newW = 300; $newH = 400;
+            $dstImg = imagecreatetruecolor($newW,$newH);
+
+            switch($type){
+                case IMAGETYPE_JPEG: $srcImg = imagecreatefromjpeg($destPath); break;
+                case IMAGETYPE_PNG: $srcImg = imagecreatefrompng($destPath); imagealphablending($dstImg,false); imagesavealpha($dstImg,true); break;
+                case IMAGETYPE_GIF: $srcImg = imagecreatefromgif($destPath); break;
+                default: $srcImg = null;
+            }
+
+            if ($srcImg) {
+                imagecopyresampled($dstImg, $srcImg,0,0,0,0,$newW,$newH,$origW,$origH);
+                switch($type){
+                    case IMAGETYPE_JPEG: imagejpeg($dstImg,$destPath,90); break;
+                    case IMAGETYPE_PNG: imagepng($dstImg,$destPath); break;
+                    case IMAGETYPE_GIF: imagegif($dstImg,$destPath); break;
+                }
+                imagedestroy($srcImg); imagedestroy($dstImg);
+            }
+
+            $thumbnail_path = $destPath;
+        } else {
+            echo "<h4>Thumbnail upload failed, keeping existing thumbnail</h4>";
+        }
     }
 }
 
-// Build SQL UPDATE statement
+// Prepare SQL
+$thumbnail_sql = $thumbnail_path ? ", thumbnail_path = '{$thumbnail_path}'" : "";
+
+// Create SQL statement to update game details in database
 $sql = "UPDATE videogames 
         SET game_name = '{$game_name}',
             game_description = '{$game_description}',
