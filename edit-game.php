@@ -44,6 +44,21 @@ $game = mysqli_fetch_assoc($results);
         name="GameRating" value="<?=$game['rating']?>">
 </div>
 
+<div class="mb-3">
+    <label for="GameGenre" class="form-label">Genre</label>
+    <select name="GameGenre" id="GameGenre" class="form-select">
+        <option value="">Select a genre</option>
+        <?php
+        $genreResults = $mysqli->query("SELECT * FROM genres ORDER BY genre_name");
+        while ($genre = $genreResults->fetch_assoc()) {
+            $selected = (isset($game['genre_id']) && $game['genre_id'] == $genre['genre_id']) ? "selected" : "";
+            echo "<option value='{$genre['genre_id']}' $selected>{$genre['genre_name']}</option>";
+        }
+        ?>
+    </select>
+</div>
+
+
 <input type="submit" class="btn btn-success" value="Save Changes"> <a href="frontpage.php" class="btn btn-danger">Cancel</a>
 
 </form>

@@ -8,10 +8,11 @@ $game_name = $mysqli->real_escape_string(trim($_POST['GameName']));
 $game_description = $mysqli->real_escape_string(trim($_POST['GameDescription']));
 $game_release_date = $_POST['DateReleased'];
 $game_rating = $_POST['GameRating'];
+$game_genre = $_POST['GameGenre'] ? (int)$_POST['GameGenre'] : "NULL";
 
 // Build SQL statement
-$sql = "INSERT INTO videogames(game_name, game_description, released_date, rating)
-VALUE('{$game_name}', '{$game_description}', '{$game_release_date}', '{$game_rating}')";
+$sql = "INSERT INTO videogames(game_name, game_description, released_date, rating, genre_id)
+VALUE('{$game_name}', '{$game_description}', '{$game_release_date}', '{$game_rating}', $game_genre)";
 
 // Run SQL statement and report errors
 if(!$mysqli -> query($sql)) {

@@ -33,9 +33,25 @@
   <div id="gameRatingMsg" class="text-danger mt-1" style="display:none;"></div>
 </div>
 
+<div class="mb-3">
+    <label for="GameGenre" class="form-label">Genre</label>
+    <select name="GameGenre" id="GameGenre" class="form-select">
+        <option value="">Select a genre</option>
+        <?php
+        $genreResults = $mysqli->query("SELECT * FROM genres ORDER BY genre_name");
+        while ($genre = $genreResults->fetch_assoc()) {
+            $selected = (isset($game['genre_id']) && $game['genre_id'] == $genre['genre_id']) ? "selected" : "";
+            echo "<option value='{$genre['genre_id']}' $selected>{$genre['genre_name']}</option>";
+        }
+        ?>
+    </select>
+</div>
+
+
 <input type="submit" class="btn btn-secondary" id="submitBtn" value="Add game" disabled>
 
 <script>
+//ajax and validation script
 const gameNameInput = document.getElementById("GameName");
 const gameDescInput = document.getElementById("GameDescription");
 const gameRatingInput = document.getElementById("GameRating");
