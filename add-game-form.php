@@ -7,7 +7,7 @@
         <h1 class="modal-title fs-5" id="addgamelabel">Add a new game!</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body addgame-modal">
         <form action="add-game.php" method="post" enctype="multipart/form-data">
 <div class="mb-3">
   <label for="GameName" class="form-label">Game name</label>

@@ -7,32 +7,49 @@ include("templates/nav.php");
 <?php 
 include("dbconnect.php");
 
-// Read GET values from the form
-$keywords = isset($_GET['keywords']) ? $mysqli->real_escape_string(trim($_GET['keywords'])) : '';
-$genre_id = isset($_GET['genre']) && $_GET['genre'] !== '' ? (int)$_GET['genre'] : null;
-$release_year = isset($_GET['release_year']) && $_GET['release_year'] !== '' ? (int)$_GET['release_year'] : null;
+$keywords = isset($_GET['keywords']) ? trim($_GET['keywords']) : '';
+$genre_id = (isset($_GET['genre']) && $_GET['genre'] !== "") ? (int)$_GET['genre'] : null;
+$release_year = !empty($_GET['release_year']) ? (int)$_GET['release_year'] : null;
 
-// Build base SQL query
-$sql = "SELECT videogames.*, genres.genre_name 
-        FROM videogames 
-        LEFT JOIN genres ON videogames.genre_id = genres.genre_id
-        WHERE 1"; // 1 lets us easily append AND clauses
+$sql = "SELECT v.*, g.genre_name 
+        FROM videogames v
+        LEFT JOIN genres g ON v.genre_id = g.genre_id
+        WHERE 1";
 
-// Add optional filters
+$params = [];
+$types = "";
+
+// Keyword filter
 if ($keywords !== '') {
-    $sql .= " AND game_name LIKE '%{$keywords}%'";
-}
-if ($genre_id) {
-    $sql .= " AND genre_id = {$genre_id}";
-}
-if ($release_year) {
-    $sql .= " AND YEAR(released_date) = {$release_year}";
+    $sql .= " AND v.game_name LIKE ?";
+    $params[] = "%{$keywords}%";
+    $types .= "s";
 }
 
-// Order by release date
-$sql .= " ORDER BY released_date DESC";
+// Genre filter
+if ($genre_id !== null) {
+    $sql .= " AND v.genre_id = ?";
+    $params[] = $genre_id;
+    $types .= "i";
+}
 
-$results = $mysqli->query($sql);
+// Release year filter
+if ($release_year !== null) {
+    $sql .= " AND YEAR(v.released_date) = ?";
+    $params[] = $release_year;
+    $types .= "i";
+}
+
+$sql .= " ORDER BY v.released_date DESC";
+
+$stmt = $mysqli->prepare($sql);
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$results = $stmt->get_result();
 
 // Check if any results were found
 if ($results->num_rows > 0): 
@@ -44,15 +61,19 @@ if ($results->num_rows > 0):
   <div class="col">
     <div class="card h-100">
       <!-- Game cover -->
-      <img src="<?= $a_row['thumbnail_path'] ?? 'uploads/placeholder.jpg' ?>" 
+      <a href="game-details.php?id=<?=$a_row['game_id']?>"><img src="<?= $a_row['thumbnail_path'] ?? 'uploads/placeholder.jpg' ?>" 
      class="card-img-top" 
      alt="<?= $a_row['game_name'] ?>">
 
       
       <div class="card-body">
         <h5 class="card-title"><?=htmlspecialchars($a_row['game_name'])?></h5>
-        <p class="card-text">Released: <?=htmlspecialchars($a_row['released_date'])?><br>
+        <p class="card-text">Genre: <?= htmlspecialchars($a_row['genre_name'] ?? 'Unknown') ?><br>
+        Release Date: <?=htmlspecialchars($a_row['released_date'])?><br>
         Rating: <?=htmlspecialchars($a_row['rating'])?></p>
+        <div class="d-flex justify-content-center gap-2 mt-3">
+        <a href="game-details.php?id=<?=$a_row['game_id']?>" class="btn btn-primary">View</a>
+        </div>
       </div>
     </div>
   </div>
@@ -64,8 +85,6 @@ if ($results->num_rows > 0):
         No games found matching your search criteria.
     </div>
 <?php endif; ?>
-
-<br>
     
     <div class="text-center mt-3">
         <a href="frontpage.php" class="btn btn-primary">Back to all games</a>

@@ -1,82 +1,173 @@
-<?php include("dbconnect.php");
+<?php 
+include("templates/header.php");
+include("templates/nav.php");
+include("dbconnect.php");
 
-// Read updated values from the form, uses escape string to prevent SQL injection and allow use of special characters
-$game_id = $_POST['game_id'];
-$game_name = $mysqli->real_escape_string(trim($_POST['GameName']));
-$game_description = $mysqli->real_escape_string(trim($_POST['GameDescription']));
-$game_release_date = $_POST['DateReleased'];
-$game_rating = $_POST['GameRating'];
-$game_genre = $_POST['GameGenre'] ? (int)$_POST['GameGenre'] : "NULL";
+// Read the game_id from the URL
+$game_id = $_GET['id'];
 
-// Keep current thumbnail as default
-$thumbnail_path = null;
+// Query the database for this game's details
+$sql = "SELECT * FROM videogames WHERE game_id = {$game_id}";
+$results = mysqli_query($mysqli, $sql);
 
-// Handle (optional) thumbnail upload
-if (isset($_FILES['GameThumbnail']) && $_FILES['GameThumbnail']['error'] === UPLOAD_ERR_OK) {
-    $fileTmpPath = $_FILES['GameThumbnail']['tmp_name'];
-    $fileName = basename($_FILES['GameThumbnail']['name']);
-    $fileSize = $_FILES['GameThumbnail']['size'];
-    $fileType = mime_content_type($fileTmpPath);
-    $allowedTypes = ['image/jpeg','image/png','image/gif'];
-
-    if (!in_array($fileType, $allowedTypes)) {
-        echo "<h4>Invalid file type. Keeping existing thumbnail.</h4>";
-    } elseif ($fileSize > 2*1024*1024) {
-        echo "<h4>File too large (max 2MB). Keeping existing thumbnail.</h4>";
-    } else {
-        $fileName = time() . '_' . preg_replace("/[^a-zA-Z0-9\._-]/","",$fileName);
-        $destPath = 'uploads/' . $fileName;
-
-        if (move_uploaded_file($fileTmpPath, $destPath)) {
-            // Resize for consistency
-            list($origW,$origH,$type) = getimagesize($destPath);
-            $newW = 300; $newH = 400;
-            $dstImg = imagecreatetruecolor($newW,$newH);
-
-            switch($type){
-                case IMAGETYPE_JPEG: $srcImg = imagecreatefromjpeg($destPath); break;
-                case IMAGETYPE_PNG: $srcImg = imagecreatefrompng($destPath); imagealphablending($dstImg,false); imagesavealpha($dstImg,true); break;
-                case IMAGETYPE_GIF: $srcImg = imagecreatefromgif($destPath); break;
-                default: $srcImg = null;
-            }
-
-            if ($srcImg) {
-                imagecopyresampled($dstImg, $srcImg,0,0,0,0,$newW,$newH,$origW,$origH);
-                switch($type){
-                    case IMAGETYPE_JPEG: imagejpeg($dstImg,$destPath,90); break;
-                    case IMAGETYPE_PNG: imagepng($dstImg,$destPath); break;
-                    case IMAGETYPE_GIF: imagegif($dstImg,$destPath); break;
-                }
-                imagedestroy($srcImg); imagedestroy($dstImg);
-            }
-
-            $thumbnail_path = $destPath;
-        } else {
-            echo "<h4>Thumbnail upload failed, keeping existing thumbnail</h4>";
-        }
-    }
-}
-
-// Prepare SQL
-$thumbnail_sql = $thumbnail_path ? ", thumbnail_path = '{$thumbnail_path}'" : "";
-
-// Create SQL statement to update game details in database
-$sql = "UPDATE videogames 
-        SET game_name = '{$game_name}',
-            game_description = '{$game_description}',
-            released_date = '{$game_release_date}',
-            rating = '{$game_rating}',
-            genre_id = $game_genre
-            {$thumbnail_sql}
-        WHERE game_id = {$game_id}";
-
-// Run SQL statement and report errors
-if(!$mysqli -> query($sql)) {
-    echo("<h4>SQL error description: " . $mysqli -> error . "</h4>");
-    exit();
-}
-
-// Redirect back to front page
-header("location: frontpage.php");
-
+// Convert result into an associative array
+$game = mysqli_fetch_assoc($results);
 ?>
+
+<h1>Edit <?=$game['game_name']?></h1>
+
+<form action="edit-game.php" method="post" enctype="multipart/form-data">
+
+<input type="hidden" name="game_id" value="<?=$game['game_id']?>">
+
+<div class="mb-3">
+    <label for="GameName" class="form-label">Game name</label>
+    <input type="text" class="form-control" id="GameName" 
+        name="GameName" value="<?=$game['game_name']?>">
+</div>
+
+
+
+<div class="mb-3">
+    <label for="GameThumbnail" class="form-label">Game Cover (optional)</label>
+    <input type="file" class="form-control" id="GameThumbnail" name="GameThumbnail" accept="image/*">
+</div>
+
+<div class="mb-3">
+    <label for="GameDescription" class="form-label">Description</label>
+    <textarea class="form-control" id="GameDescription" 
+        name="GameDescription" rows="5"><?=$game['game_description']?></textarea>
+</div>
+
+<div class="mb-3">
+    <label for="DateReleased" class="form-label">Date released</label>
+    <input type="date" class="form-control" id="DateReleased" 
+        name="DateReleased" value="<?=$game['released_date']?>">
+</div>
+
+<div class="mb-3">
+    <label for="GameRating" class="form-label">Rating</label>
+    <input type="number" class="form-control" id="GameRating" 
+        name="GameRating" value="<?=$game['rating']?>">
+</div>
+
+<div class="mb-3">
+    <label for="GameGenre" class="form-label">Genre</label>
+    <select name="GameGenre" id="GameGenre" class="form-select">
+        <option value="">Select a genre</option>
+        <?php
+        $genreResults = $mysqli->query("SELECT * FROM genres ORDER BY genre_name");
+        while ($genre = $genreResults->fetch_assoc()) {
+            $selected = (isset($game['genre_id']) && $game['genre_id'] == $genre['genre_id']) ? "selected" : "";
+            echo "<option value='{$genre['genre_id']}' $selected>{$genre['genre_name']}</option>";
+        }
+        ?>
+    </select>
+</div>
+
+
+<input type="submit" class="btn btn-success" value="Save Changes"> <a href="frontpage.php" class="btn btn-danger">Cancel</a>
+
+</form>
+<script>
+// Elements
+const gameNameInput = document.getElementById("GameName");
+const gameDescInput = document.getElementById("GameDescription");
+const gameRatingInput = document.getElementById("GameRating");
+const gameDateInput = document.getElementById("DateReleased");
+const submitBtn = document.querySelector('input[type="submit"]');
+
+// Message spans under each input (create if not already in HTML)
+const nameMsg = document.createElement('div');
+nameMsg.className = 'text-danger mt-1';
+gameNameInput.parentNode.appendChild(nameMsg);
+
+const descMsg = document.createElement('div');
+descMsg.className = 'text-danger mt-1';
+gameDescInput.parentNode.appendChild(descMsg);
+
+const ratingMsg = document.createElement('div');
+ratingMsg.className = 'text-danger mt-1';
+gameRatingInput.parentNode.appendChild(ratingMsg);
+
+const dateMsg = document.createElement('div');
+dateMsg.className = 'text-danger mt-1';
+gameDateInput.parentNode.appendChild(dateMsg);
+
+// Disable submit initially if fields are blank
+submitBtn.disabled = false;
+
+// Validate fields function
+function validateForm() {
+    let valid = true;
+
+    const name = gameNameInput.value.trim();
+    const desc = gameDescInput.value.trim();
+    const rating = gameRatingInput.value.trim();
+    const date = gameDateInput.value;
+
+    // Name
+    if (name === '') {
+        nameMsg.textContent = "Name cannot be blank.";
+        valid = false;
+    } else {
+        nameMsg.textContent = '';
+    }
+
+    // Description
+    if (desc === '') {
+        descMsg.textContent = "Description cannot be blank.";
+        valid = false;
+    } else {
+        descMsg.textContent = '';
+    }
+
+    // Rating
+    if (rating === '') {
+        ratingMsg.textContent = "Rating cannot be blank.";
+        valid = false;
+    } else {
+        ratingMsg.textContent = '';
+    }
+
+    // Release date
+    if (date === '') {
+        dateMsg.textContent = "Release date cannot be blank.";
+        valid = false;
+    } else {
+        dateMsg.textContent = '';
+    }
+
+    // Enable submit if all fields are valid
+    submitBtn.disabled = !valid;
+}
+
+// AJAX duplicate name check (ignore current game_id)
+const currentGameId = <?= $game['game_id'] ?>;
+
+gameNameInput.addEventListener('input', function() {
+    const name = this.value.trim();
+    
+    if (name.length === 0) {
+        validateForm();
+        return;
+    }
+
+    fetch("check-game.php?name=" + encodeURIComponent(name) + "&exclude=" + currentGameId)
+        .then(res => res.json())
+        .then(data => {
+            if (data.exists) {
+                nameMsg.textContent = "This game name already exists.";
+                submitBtn.disabled = true;
+            } else {
+                validateForm();
+            }
+        });
+});
+
+// Validate other fields on input
+[gameDescInput, gameRatingInput, gameDateInput].forEach(el => {
+    el.addEventListener('input', validateForm);
+});
+</script>
+<?php include("templates/footer.php");?>
