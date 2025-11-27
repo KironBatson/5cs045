@@ -67,7 +67,7 @@ if ($results->num_rows > 0):
 
       
       <div class="card-body">
-        <h5 class="card-title"><?=htmlspecialchars($a_row['game_name'])?></h5>
+        <h5 class="game-title"><?=htmlspecialchars($a_row['game_name'])?></h5>
         <p class="card-text">Genre: <?= htmlspecialchars($a_row['genre_name'] ?? 'Unknown') ?><br>
         Release Date: <?=htmlspecialchars($a_row['released_date'])?><br>
         Rating: <?=htmlspecialchars($a_row['rating'])?></p>

@@ -18,27 +18,32 @@ $sql = "SELECT videogames.*, genres.genre_name
 $results = mysqli_query($mysqli, $sql);
 ?>
 
+<!-- Game cards in a grid layout -->
 <div class="row row-cols-1 row-cols-md-3 g-4">
 <?php while($a_row = mysqli_fetch_assoc($results)): ?>
   <div class="col">
     <div class="card h-100">
       <!-- Game cover -->
-      <img src="<?= $a_row['thumbnail_path'] ?? 'uploads/placeholder.jpg' ?>" 
+      <a href="game-details.php?id=<?=$a_row['game_id']?>"><img src="<?= $a_row['thumbnail_path'] ?? 'uploads/placeholder.jpg' ?>" 
      class="card-img-top" 
      alt="<?= $a_row['game_name'] ?>">
 
-      
+      <!-- Card body with game details -->
       <div class="card-body">
-        <h5 class="card-title"><?=htmlspecialchars($a_row['game_name'])?></h5>
+        <h5 class="game-title"><?=htmlspecialchars($a_row['game_name'])?></h5>
         <p class="card-text">Genre: <?= htmlspecialchars($a_row['genre_name'] ?? 'Unknown') ?><br>
 		Release Date: <?=htmlspecialchars($a_row['released_date'])?><br>
         Rating: <?=htmlspecialchars($a_row['rating'])?></p>
         
-
+        <!-- Edit, View, Delete buttons (Centered) --> 
         <div class="d-flex justify-content-center gap-2 mt-3">
+        <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <a href="edit-game-form.php?id=<?=$a_row['game_id']?>" class="btn btn-outline-warning">Edit</a>
+        <?php endif; ?>
         <a href="game-details.php?id=<?=$a_row['game_id']?>" class="btn btn-primary">View</a>
+        <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <a href="delete-game.php?id=<?=$a_row['game_id']?>" class="btn btn-outline-danger">Delete</a>
+        <?php endif; ?>
         </div>
       </div>
     </div>
