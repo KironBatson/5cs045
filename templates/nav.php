@@ -1,7 +1,7 @@
 <?php include("dbconnect.php"); ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top w-100">
   <div class="container-fluid">
-    <a class="navbar-brand" href="frontpage.php">Navigation</a>
+    <a class="navbar-brand" href="frontpage.php">KGA</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -19,9 +19,9 @@
         <?php session_start(); // make sure session is started ?>
         <li class="nav-item">
         <?php if(isset($_SESSION['user_id'])): ?>
-        <a class="nav-link" href="logout.php">Logout (<?=htmlspecialchars($_SESSION['username'])?>)</a>
+        <a class="nav-link" href="logout.php">Sign out (<?=htmlspecialchars($_SESSION['username'])?>)</a>
         <?php else: ?>
-          <a class="nav-link" href="login.php">Login</a>
+          <a class="nav-link" href="login.php">Sign in/Sign up</a>
         <?php endif; ?>
       </li>
       </ul>

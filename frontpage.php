@@ -17,6 +17,14 @@ $sql = "SELECT videogames.*, genres.genre_name
 //run query, pass it 2 things, connection used declared in dbconnect.php, and which query being run - declared above
 $results = mysqli_query($mysqli, $sql);
 ?>
+        
+        <!-- If admin, show add new game button -->
+        <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <div class="d-flex justify-content-center mb-3">
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addgame" >Add new game</button>
+        </div>
+        <?php endif; ?>
+        <br>
 
 <!-- Game cards in a grid layout -->
 <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -51,8 +59,5 @@ $results = mysqli_query($mysqli, $sql);
 <?php endwhile; ?>
 </div>
 <br>
-
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addgame" >Add new game</button>
-
 <?php include("add-game-form.php");?>
 <?php include("templates/footer.php");?>
