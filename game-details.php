@@ -1,13 +1,21 @@
-<?php 
-include("templates/header.php");
-include("templates/nav.php");
+<?php
+session_start();
 
-// Connect to database and run SQL query
+include("twig-init.php");
 include("dbconnect.php");
 
-// Uses GET Method to grab id value from URL
-$id = $_GET['id'];
+// Fetch genres
+$genresQuery = $mysqli->query("SELECT * FROM genres ORDER BY genre_name");
+$genres = $genresQuery->fetch_all(MYSQLI_ASSOC);
 
+// Fetch years
+$yearsQuery = $mysqli->query("SELECT DISTINCT YEAR(released_date) AS year FROM videogames ORDER BY year DESC");
+$years = $yearsQuery->fetch_all(MYSQLI_ASSOC);
+
+// Get ID safely
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+// Query
 $sql = "
 SELECT videogames.*, genres.genre_name
 FROM videogames
@@ -18,29 +26,12 @@ WHERE videogames.game_id = {$id}
 
 $rst = mysqli_query($mysqli, $sql);
 $a_row = mysqli_fetch_assoc($rst);
+
+// Render twig
+echo $twig->render('game-details.html', [
+    'session' => $_SESSION,
+    'game'    => $a_row,
+    "genres" => $genres,
+    "years" => $years,
+]);
 ?>
-
-<div class="container mt-4">
-    <div class="row align-items-start">
-
-        <!-- LEFT COLUMN: Text -->
-        <div class="col-md-7">
-            <h1 class="game-title"><?=$a_row['game_name']?></h1>
-            <p><?=$a_row['game_description']?></p>
-
-            <a href="frontpage.php" class="btn btn-secondary mt-3">&laquo; Back to list</a>
-        </div>
-
-        <!-- RIGHT COLUMN: Image -->
-        <div class="col-md-5 text-center">
-            <img src="<?= $a_row['thumbnail_path'] ?? 'uploads/placeholder.jpg' ?>" alt="<?=htmlspecialchars($a_row['game_name'])?>" 
-            class="img-fluid rounded shadow">
-            <p>Genre: <?= htmlspecialchars($a_row['genre_name'] ?? 'Unknown') ?><br>
-		Release Date: <?=htmlspecialchars($a_row['released_date'])?><br>
-        Rating: <?=htmlspecialchars($a_row['rating'])?></p>
-        </div>
-
-    </div>
-</div>
-
-<?php include("templates/footer.php");?>

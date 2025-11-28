@@ -1,0 +1,31 @@
+{% include "header.html" %}
+{% include "nav.html" %}
+
+<div class="container mt-4">
+    <div class="row align-items-start">
+
+        <!-- LEFT COLUMN -->
+        <div class="col-md-7">
+            <h1 class="game-title">{{ game.game_name }}</h1>
+            <p>{{ game.game_description }}</p>
+
+            <a href="frontpage.php" class="btn btn-secondary mt-3">&laquo; Back to list</a>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-md-5 text-center">
+            <img src="{{ game.thumbnail_path ?? 'uploads/placeholder.jpg' }}"
+                 alt="{{ game.game_name }}"
+                 class="img-fluid rounded shadow">
+
+            <p>
+                Genre: {{ game.genre_name ?? 'Unknown' }} <br>
+                Release Date: {{ game.release_date }} <br>
+                Rating: {{ game.rating }}
+            </p>
+        </div>
+
+    </div>
+</div>
+
+{% include "footer.html" %}

@@ -1,0 +1,110 @@
+{% include "header.html" %}
+{% include "nav.html" %}
+
+<h1 class="text-center">Edit {{ game.game_name }}</h1>
+
+<form action="edit-game.php" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="game_id" value="{{ game.game_id }}">
+
+    <div class="mb-3">
+        <label for="GameName" class="form-label">Game name</label>
+        <input type="text" class="form-control" id="GameName" name="GameName" value="{{ game.game_name }}">
+        <div id="gameNameMsg" class="text-danger mt-1"></div>
+    </div>
+
+    <div class="mb-3">
+        <label for="GameThumbnail" class="form-label">Game Cover (optional)</label>
+        <input type="file" class="form-control" id="GameThumbnail" name="GameThumbnail" accept="image/*">
+    </div>
+
+    <div class="mb-3">
+        <label for="GameDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="GameDescription" name="GameDescription" rows="5">{{ game.game_description }}</textarea>
+        <div id="gameDescMsg" class="text-danger mt-1"></div>
+    </div>
+
+    <div class="mb-3">
+        <label for="DateReleased" class="form-label">Date released</label>
+        <input type="date" class="form-control" id="DateReleased" name="DateReleased" value="{{ game.released_date }}">
+        <div id="gameDateMsg" class="text-danger mt-1"></div>
+    </div>
+
+    <div class="mb-3">
+        <label for="GameRating" class="form-label">Rating</label>
+        <input type="number" class="form-control" id="GameRating" name="GameRating" value="{{ game.rating }}">
+        <div id="gameRatingMsg" class="text-danger mt-1"></div>
+    </div>
+
+    <div class="mb-3">
+        <label for="GameGenre" class="form-label">Genre</label>
+        <select name="GameGenre" id="GameGenre" class="form-select">
+            <option value="">Select a genre</option>
+            {% for genre in genres %}
+                <option value="{{ genre.genre_id }}" {% if game.genre_id == genre.genre_id %}selected{% endif %}>{{ genre.genre_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <input type="submit" class="btn btn-success" value="Save Changes">
+    <a href="frontpage.php" class="btn btn-danger">Cancel</a>
+</form>
+
+<script>
+const gameNameInput = document.getElementById('GameName');
+const gameDescInput = document.getElementById('GameDescription');
+const gameRatingInput = document.getElementById('GameRating');
+const gameDateInput = document.getElementById('DateReleased');
+const submitBtn = document.querySelector('input[type="submit"]');
+
+const gameNameMsg = document.getElementById('gameNameMsg');
+const gameDescMsg = document.getElementById('gameDescMsg');
+const gameRatingMsg = document.getElementById('gameRatingMsg');
+const gameDateMsg = document.getElementById('gameDateMsg');
+
+function validateForm() {
+    let valid = true;
+
+    // --- Game Name ---
+    if (gameNameInput.value.trim() === '') {
+        gameNameMsg.textContent = 'Name cannot be blank.';
+        valid = false;
+    } else {
+        gameNameMsg.textContent = '';
+    }
+
+    // --- Description ---
+    if (gameDescInput.value.trim() === '') {
+        gameDescMsg.textContent = 'Description cannot be blank.';
+        valid = false;
+    } else {
+        gameDescMsg.textContent = '';
+    }
+
+    // --- Rating ---
+    if (gameRatingInput.value.trim() === '') {
+        gameRatingMsg.textContent = 'Rating cannot be blank.';
+        valid = false;
+    } else {
+        gameRatingMsg.textContent = '';
+    }
+
+    // --- Release Date ---
+    if (gameDateInput.value.trim() === '') {
+        gameDateMsg.textContent = 'Release date cannot be blank.';
+        valid = false;
+    } else {
+        gameDateMsg.textContent = '';
+    }
+
+    submitBtn.disabled = !valid;
+}
+
+// Run validation on input events
+[gameNameInput, gameDescInput, gameRatingInput, gameDateInput].forEach(el => {
+    el.addEventListener('input', validateForm);
+});
+
+// Initial validation check on page load
+validateForm();
+</script>
+{% include "footer.html" %}

@@ -1,37 +1,18 @@
-<?php 
-include("templates/header.php");
-include("templates/nav.php");
-?>
+<?php
+session_start();
+include("twig-init.php");
+include("dbconnect.php");
 
-<div class="container text-center mt-4">
-    <h1>Contact us</h1>
+// Fetch genres
+$genreResults = $mysqli->query("SELECT * FROM genres ORDER BY genre_name");
+$genres = mysqli_fetch_all($genreResults, MYSQLI_ASSOC);
 
-    <p>If you have any questions or feedback about Kiron's Video Game Archive, feel free to reach out to us!</p>
-    <p>Email: <a href="mailto:k.c.batson@wlv.ac.uk" class="text-white">k.c.batson@wlv.ac.uk</a></p>
+// Fetch years
+$yearResults = $mysqli->query("SELECT DISTINCT YEAR(released_date) AS year FROM videogames ORDER BY year DESC");
+$years = mysqli_fetch_all($yearResults, MYSQLI_ASSOC);
 
-    <br>
-    <h4>Online Handles:</h4>
-    <div class="d-flex justify-content-center gap-3 mb-4">
-        <a href="https://www.psntools.com/psn/checker/Kryozone132" target="_blank">
-            <img src="uploads/psn.png" alt="PSN" width="50" height="50">
-        </a>
-        <a href="https://steamcommunity.com/id/Kyzone123/" target="_blank">
-            <img src="uploads/steam.png" alt="Steam" width="50" height="50">
-        </a>
-        <a href="https://github.com/KironBatson" target="_blank">
-            <img src="uploads/github.png" alt="GitHub" width="50" height="50">
-        </a>
-    </div>
-
-    <h4>Social Media:</h4>
-    <div class="d-flex justify-content-center gap-3 mb-4">
-        <a href="https://instagram.com/k._.ron" target="_blank">
-            <img src="uploads/instagram.png" alt="Instagram" width="50" height="50">
-        </a>
-        <a href="https://www.snapchat.com/@kbats67" target="_blank">
-            <img src="uploads/snapchat.png" alt="Snapchat" width="50" height="50">
-        </a>
-    </div>
-</div>
-
-<?php include("templates/footer.php"); ?>
+echo $twig->render('contact-us.html', [
+    'session' => $_SESSION,
+    'genres' => $genres,
+    'years' => $years
+]);

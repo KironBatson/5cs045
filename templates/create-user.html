@@ -1,0 +1,36 @@
+{% include "header.html" %}
+
+<div class="d-flex flex-column justify-content-center align-items-center min-vh-100">
+    <h2 class="mb-4 text-center text-white">Create User</h2>
+
+    <form method="post" class="w-50">
+        <div class="mb-3">
+            <input type="text" name="username" class="form-control" placeholder="Username" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" name="password" class="form-control" placeholder="Password" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" name="confirm" class="form-control" placeholder="Confirm Password" required>
+        </div>
+        <!-- Google reCAPTCHA -->
+        <div class="mb-3">
+            <div class="g-recaptcha" data-sitekey="6Lf4eRksAAAAAPwJCMsmDamWd0aNPpBPewthcEoR"></div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-2">
+            <button type="submit" class="btn btn-success">Create User</button>
+            <a href="login.php" class="btn btn-secondary">Back to Login</a>
+        </div>
+
+        {% if error %}
+            <p class="text-danger mt-2 text-center">{{ error }}</p>
+        {% endif %}
+
+    </form>
+</div>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+{% include "footer.html" %}
+

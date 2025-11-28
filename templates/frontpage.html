@@ -1,0 +1,55 @@
+<!-- Include templates header and navigation bar -->
+{% include "header.html" %}
+{% include "nav.html" %}
+
+<h1 class="text-center">Kiron's Games Archive</h1>
+<p class="text-center">A personal compendium of all the games I've played — my ongoing work-in-progress archive. 
+   Here you'll find ratings, thoughts, and essential information for each title I've explored.</p>
+
+<!-- If admin, show add new game button -->
+{% if session.role is defined and session.role == 'admin' %}
+   <div class="d-flex justify-content-center mb-3">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addgame">Add new game</button>
+   </div>
+   {% include 'add-game-form.html' %}
+{% endif %}
+
+<br>
+
+<!-- Game cards in a grid layout -->
+<div class="row row-cols-1 row-cols-md-3 g-4">
+   {% for item in results %}
+      <div class="col">
+         <div class="card h-100">
+            <!-- Game cover -->
+            <a href="game-details.php?id={{ item.game_id }}">
+              <img src="{{ item.thumbnail_path|default('uploads/placeholder.jpg') }}"  
+                  class="card-img-top" alt="{{ item.game_name }}">
+            </a>
+
+            <!-- Card body with game details -->
+            <div class="card-body">
+               <h5 class="game-title">{{ item.game_name }}</h5>
+               <p class="card-text">Genre: {{ item.genre_name ?: 'Unknown' }}<br>
+                  Release Date: {{ item.released_date }}<br>
+                  Rating: {{ item.rating }}
+               </p>
+
+               <!-- Edit, View, Delete buttons (Centered) -->
+               <div class="d-flex justify-content-center gap-2 mt-3">
+                  {% if session.role is defined and session.role == 'admin' %}
+                     <a href="edit-game-form.php?id={{ item.game_id }}" class="btn btn-outline-warning">Edit</a>
+                  {% endif %}
+                  <a href="game-details.php?id={{ item.game_id }}" class="btn btn-primary">View</a>
+                  {% if session.role is defined and session.role == 'admin' %}
+                     <a href="delete-game.php?id={{ item.game_id }}" class="btn btn-outline-danger">Delete</a>
+                  {% endif %}
+               </div>
+            </div>
+         </div>
+      </div>
+   {% endfor %}
+</div>
+
+<br>
+{% include "footer.html" %}

@@ -1,0 +1,50 @@
+{% include "header.html" %}
+{% include "nav.html" %}
+
+<h1 class="text-center">Search Results</h1>
+
+{% if results|length > 0 %}
+
+<div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
+    {% for item in results %}
+        <div class="col">
+            <div class="card h-100">
+
+                <a href="game-details.php?id={{ item.game_id }}">
+                    <img src="{{ item.thumbnail_path ?? 'uploads/placeholder.jpg' }}"
+                         class="card-img-top"
+                         alt="{{ item.game_name }}">
+                </a>
+
+                <div class="card-body">
+                    <h5 class="game-title">{{ item.game_name }}</h5>
+
+                    <p class="card-text">
+                        Genre: {{ item.genre_name ?? 'Unknown' }}<br>
+                        Release Date: {{ item.released_date }}<br>
+                        Rating: {{ item.rating }}
+                    </p>
+
+                    <div class="d-flex justify-content-center mt-3">
+                        <a href="game-details.php?id={{ item.game_id }}" class="btn btn-primary">View</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% else %}
+
+<div class="alert alert-warning text-center mt-3">
+    No games found matching your search criteria.
+</div>
+
+{% endif %}
+
+<div class="text-center mt-4">
+    <a href="frontpage.php" class="btn btn-primary">Back to all games</a>
+</div>
+
+{% include "footer.html" %}
