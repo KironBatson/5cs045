@@ -1,11 +1,35 @@
-<?php include("dbconnect.php");
-// Is a keyword provided in the URL?
-if(isset($_GET['search']))
-$sql = "SELECT * FROM videogames WHERE game_name LIKE '%{$_GET['search']}%'
-ORDER BY game_name";
-else
-$sql = "SELECT * FROM videogames ORDER BY game_name";
-// Fetch all record, convert to JSON and return
-$results = $mysqli->query($sql)->fetch_all(MYSQLI_ASSOC);
-print(json_encode($results));
+<?php
+include("dbconnect.php");
+
+// Prepare default SQL
+if (isset($_GET['search']) && strlen($_GET['search']) > 0) {
+
+    $search = $_GET['search'];
+
+    // Prepared statement prevents SQLi
+    $stmt = $mysqli->prepare("
+        SELECT game_id, game_name
+        FROM videogames
+        WHERE game_name LIKE CONCAT('%', ?, '%')
+        ORDER BY game_name
+    ");
+
+    $stmt->bind_param("s", $search);
+    $stmt->execute();
+    $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+} else {
+    // Fallback: still safe but no user input
+    $stmt = $mysqli->prepare("
+        SELECT game_id, game_name
+        FROM videogames
+        ORDER BY game_name
+    ");
+
+    $stmt->execute();
+    $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+header('Content-Type: application/json');
+echo json_encode($results);
 ?>

@@ -1,20 +1,25 @@
-<?php 
-
-// Read id from URL
-$game_id = $_GET['id'];
-
-// Connect to database
+<?php
+session_start();
 include("dbconnect.php");
 
-// Build SQL statement
-$sql = "DELETE FROM videogames WHERE game_id = ". $game_id;
-
-// Run SQL statement and report errors
-if(!$mysqli -> query($sql)) {
-    echo("<h4>SQL error description: " . $mysqli -> error . "</h4>");
+// Only admin can delete
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header("Location: frontpage.php");
+    exit();
 }
 
-// Redirect to list
-header("location: frontpage.php");
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    header("Location: frontpage.php");
+    exit();
+}
 
+$game_id = (int)$_GET['id'];
+
+// Prepared statement prevents SQL injection
+$stmt = $mysqli->prepare("DELETE FROM videogames WHERE game_id = ?");
+$stmt->bind_param("i", $game_id);
+$stmt->execute();
+
+header("Location: frontpage.php");
+exit();
 ?>
